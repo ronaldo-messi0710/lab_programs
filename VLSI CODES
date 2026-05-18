@@ -1,4 +1,4 @@
-verilog code for exp 32 bit alu
+VERILOG CODE FOR EXP 32 BIT ALU
 
 'timescale 1ns|1ps.
 module alu-32 bits (
@@ -25,7 +25,7 @@ endcase
 end
 endmodule
 
-Test bench for exp 32 bit alu
+TEST BENCH FOR EXP 32 BIT ALU
 
 ~time Scale 1ns/1ps.
 module tb_32bit_alu;
@@ -58,4 +58,105 @@ end
 end module
 test bench code
 
--------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+
+VERILOG CODE FOR FOUR BIT ADDER
+
+module four_bit_adder(a,b,c0,s,c4);
+input [3:0]a,b;
+input c0;
+output [3:0]s;
+output c4;
+wire c1,c2,c3;
+full adder fa0(a[0],b[0],co,s[0],c1);
+full adder fa1(a[1],b[1],c1,s[1],c2);
+full adder fa2(a[2],b[2],c2,s[2],c3);
+full adder fa3(a[3],b[3],c3,s[3],c4);
+endmodule
+
+module full adder(a,b,ci,s,co);
+input a,b,ci;
+output s,c0;
+assign s=a^b^ci;
+assign c0=(a&b)(b&ci)|(a&ci);
+endmodule
+
+TEST BENCH FOR FOUR BIT ADDER
+
+module test _four_bit_adder ;
+reg [3:0]a;
+reg [3:0]b;
+reg c0;
+wire [3:0]s:
+wire c4;
+four bit adder dut(a,b,c0,s,c4);
+initial begin
+a=4'b0011; b = 4 'b0011; c0=1'b0; #10; 
+a = 4'b0011; b = 4 4b0111; c0=1'b1; #10;
+a = 4' b1101; b = 4 'b0011; c0=1 b1; #10;
+end initial;
+#50 $finish;
+endmodule
+
+--------------------------------------------------------------------------------------------------------
+
+VERILOG CODE FOR SR FLIPFLOP
+
+
+module SR_Flipflop(
+output reg q, qbar,
+input s, r, clk
+); 
+always@(posedge clk)begin
+if(s==1&&r==0) begin
+q<=1;
+qbar<=0;
+end
+else if(s==0&&r==1) begin
+q<=0;
+qbar<=1;
+end
+else if (s==0&&r==1) begin
+q<=q;
+qbar<=qbar;
+end
+else if(s=+1&&r=+1) begin
+q<=1'bx;
+qbar<=1'bx;
+end
+end
+endmodule
+
+
+TEST BENCH CODE FOR SR FLIPFLOP
+
+module tb_ SRff;
+reg s,r,clk;
+wire q,qbar;
+SR Flipflop uut(.q(q),.qbar (qbar),.s(s),.r(r),.clk(clk));
+initial begin
+clk=0;s=0;r=8;
+#10 s=1;r=0;
+#10 s=0;r=0;
+#10 s=1;r=1;
+#10 s=0;r=0;
+#50 $finish;
+end
+always #5 clk=~clk;
+endmodule
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+VERILOG CODE FOR JK FLIPFLOP
+
+module jkff (input reset, input Clk, input j,input k,output reg q, output qnot);
+assign qnot =~q;
+always @(posedge , clk)
+if (reset) q< = 1b0; else
+ case ({j,k})
+2'b00: q<=q;
+2'b01: q<=1'b0;
+2'b10: q<=1'b1;
+2'b11: q<=~q;
+end case
+end module
