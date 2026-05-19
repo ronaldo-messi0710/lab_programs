@@ -161,6 +161,28 @@ if (reset) q< = 1b0; else
 end case
 end module
 
+TEST BENCH CODE FOR JK FLIPFLOP
+
+module test;
+reg Clk=0;
+reg j=0;
+reg k=0;
+reg reset=0;
+wire q, qnot;
+jkff dut (reset, clk, j, k, q, qnot);
+initial
+begin
+#10  j = 1'b0; K = 1'b0;
+#10  j = 1'b1; K = 1'b0;
+#10 j = 1'b0; K = 1'b1;
+#10 j = 1'b1; K = 1'b1;
+#10 j = 1'b1; K = 1'b1;
+#25 reset = 1'b1j;
+#25 $ finish;
+end
+always #1 Clk = ~ Clk;
+end module.
+
 -----------------------------------------------------------------------------------------------------------------------------------
 
 VERILOG CODE FOR MOD N COUNT
