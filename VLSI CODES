@@ -272,3 +272,46 @@ end
 endmodule
 
 -----------------------------------------------------------------------------------------------------------
+
+VERILOG CODE FOR D FLIPFLOP
+
+moduleRisingEdge_DFlipFlop_SyncReset(D,clk,sync_reset,Q); 
+input D; 
+input clk; 
+input sync_reset; 
+output reg Q; 
+always @(posedge clk) 
+begin 
+if(sync_reset==1'b1)
+Q <= 1'b0;
+else
+Q <= D;
+end 
+endmodule
+
+TEST BENCH CODE FOR D FLIPFLOP
+
+module tb_DFF(); 
+reg D;
+reg clk; 
+reg reset; 
+wire Q;
+RisingEdge_DFlipFlop_SyncReset dut(D,clk,reset,Q); 
+initial begin
+clk=0;
+forever #10 clk = ~clk; 
+end
+initial begin 
+reset=1;
+D <= 0;
+#100;
+reset=0;
+D <= 1;
+#100;
+D <= 0;
+#100;
+D <= 1;
+end 
+endmodule
+
+------------------------------------------------------------------------------------------------------
