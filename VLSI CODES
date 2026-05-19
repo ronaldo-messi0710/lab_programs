@@ -241,6 +241,27 @@ endmodule
 
 ---------------------------------------------------------------------------------------------------------------------------
 
+VERILOG CODE FOR SHIFT ADD MULLTIPLIER
+
+module shift_add_multiplier (
+input [3:0] a, // 4-bit multiplicand 
+input [3:0] b, // 4-bit multiplier 
+output [7:0] product); 
+reg [7:0] prod_reg;
+reg [3:0] count;
+integer i;
+always @* begin 
+prod_reg = 8'b0;
+for (i = 0; i < 4; i = i + 1) begin 
+if (b[i] == 1'b1) begin 
+prod_reg = prod_reg + (a << i);
+end 
+end
+end
+assign product = prod_reg; 
+endmodule
+
+
 TEST BENCH CODE FOR SHIFT ADD MULLTIPLIER 
 
 `timescale 1ns/1ps
