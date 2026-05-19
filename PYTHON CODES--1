@@ -1,0 +1,285 @@
+#EXPT-1
+from random import choice
+b = [' '] * 9
+w = [(0,1,2),(3,4,5),(6,7,8),(0,3,6),(1,4,7),(2,5,8),(0,4,8),(2,4,6)]
+def show(): print(f"{b[0]}|{b[1]}|{b[2]}\n-+-+-\n{b[3]}|{b[4]}|{b[5]}\n-+-+-\n{b[6]}|{b[7]}|{b[8]}")
+while True:
+    show()
+    u = int(input("Your move (0-8): "))
+    if b[u] != ' ': continue
+    b[u] = 'O'
+    if any(b[i]==b[j]==b[k]=='O' for i,j,k in w): show(); print("You win!"); break
+    if ' ' not in b: show(); print("Draw!"); break
+    c = choice([i for i in range(9) if b[i]==' '])
+    b[c] = 'X'
+    print("Computer:", c)
+    if any(b[i]==b[j]==b[k]=='X' for i,j,k in w): show(); print("Computer wins!"); break
+
+
+----------------------------------------------------------------------------------------------------
+
+
+#EXPT-2
+def inversions(s):
+    p = [x for x in s if x != 0]
+    return sum(p[i] > p[j] for i in range(len(p)) for j in range(i+1, len(p)))
+solvable = lambda s: inversions(s) % 2 == 0
+def show(s):
+    for i in range(0, 9, 3):
+        print(*[" " if x==0 else x for x in s[i:i+3]])
+s1 = list(map(int, input("State 1: ").split()))
+s2 = list(map(int, input("State 2: ").split()))
+print("\nState 1"); show(s1)
+print("State 2"); show(s2)
+print("State 1 Inversions:", inversions(s1))
+print("State 2 Inversions:", inversions(s2))
+print("\nState 1:", "Solvable" if solvable(s1) else "Unsolvable")
+print("State 2:", "Solvable" if solvable(s2) else "Unsolvable")
+print("\nBoth are in", "SAME set" if solvable(s1)==solvable(s2) else "DIFFERENT sets")
+
+----------------------------------------------------------------------------------------------------
+
+
+#EXPT-3
+d = {"Ravi":22, "Anu":17, "Kiran":19, "Meena":15}
+print("===== KNOWLEDGE BASE =====")
+for i, j in d.items():
+    print(i, "age:", j)
+print("\n===== PREDICATE LOGIC RESULT =====")
+for i, j in d.items():
+    print(i, "CAN vote" if j >= 18 else "CANNOT vote")
+print("\nRule: If age >=18 THEN Eligible_to_vote(person)")
+
+
+----------------------------------------------------------------------------------------------------
+
+
+#EXPT-4
+data = [
+    ["High", "Good", "Yes"],
+    ["High", "Poor", "No"],
+    ["Low", "Good", "No"],
+    ["High", "Good", "Yes"]
+]
+def find_s(data):
+    s = None
+    for e in data:
+        if e[-1] == "Yes":
+            if s is None:
+                s = e[:-1]
+            else:
+                for i in range(len(s)):
+                    if s[i] != e[i]:
+                        s[i] = "?"
+    return s
+def candidate_elimination(data):
+    n = len(data[0]) - 1
+    S = ["ϕ"] * n
+    G = [["?"] * n]
+    values = [
+        ["High", "Low"],
+        ["Good", "Poor"]
+    ]
+    for e in data:
+        x, label = e[:-1], e[-1]
+        if label == "Yes":
+            if S[0] == "ϕ":
+                S = x.copy()
+            else:
+                for i in range(n):
+                    if S[i] != x[i]:
+                        S[i] = "?"
+        else:
+            G_new = []
+            for g in G:
+                for i in range(n):
+                    if g[i] == "?":
+                        for v in values[i]:
+                            if v != x[i]:
+                                h = g.copy()
+                                h[i] = v
+                                G_new.append(h)
+            G = G_new
+    return S, G
+print("Find-S Hypothesis:", find_s(data))
+S, G = candidate_elimination(data)
+print("Specific Hypothesis S:", S)
+print("General Hypothesis G:", G)
+
+----------------------------------------------------------------------------------------------------
+
+
+#EXPT-5
+import pandas as pd, math
+data = {
+    'StudyHours': ['High','High','Medium','Low','Low','Medium','High','Low','Medium','High'],
+    'Attendance': ['Good','Poor','Good','Poor','Good','Good','Poor','Poor','Good','Good'],
+    'Assignment': ['Yes','Yes','Yes','No','No','Yes','No','No','Yes','Yes'],
+    'Result': ['Pass','Pass','Pass','Fail','Fail','Pass','Fail','Fail','Pass','Pass']
+}
+df = pd.DataFrame(data)
+def entropy(col):
+    e = 0
+    for v in col.unique():
+        p = len(col[col == v]) / len(col)
+        e -= p * math.log2(p)
+    return e
+def gain(df, att, tgt):
+    return entropy(df[tgt]) - sum(len(s) / len(df) * entropy(s[tgt]) for _, s in df.groupby(att))
+def id3(df, feats, tgt):
+    if df[tgt].nunique() == 1:
+        return df[tgt].iloc[0]
+    if not feats:
+        return df[tgt].mode()[0]
+    best = max(feats, key=lambda f: gain(df, f, tgt))
+    return {
+        best: {
+            v: id3(
+                df[df[best] == v],
+                [f for f in feats if f != best],
+                tgt
+            )
+            for v in df[best].unique()
+        }
+    }
+print(id3(df, list(df.columns[:-1]), 'Result'))
+
+
+----------------------------------------------------------------------------------------------------
+
+
+#EXPT-6
+import math, random
+from collections import Counter, defaultdict
+def entropy(d):
+    return -sum(p/len(d)*math.log2(p/len(d)) for p in Counter(r[-1] for r in d).values())
+def split(d, f):
+    g = defaultdict(list)
+    for r in d: g[r[f]].append(r)
+    return g.values()
+def id3(d, fs):
+    lbls = [r[-1] for r in d]
+    if len(set(lbls)) == 1 or not fs: return Counter(lbls).most_common(1)[0][0]
+    b = max(fs, key=lambda f: entropy(d) - sum(len(s)/len(d)*entropy(s) for s in split(d, f)))
+    return {b: {v: id3([r for r in d if r[b]==v], [f for f in fs if f!=b]) for v in {r[b] for r in d}}}
+def predict(tree, row):
+    return tree if not isinstance(tree, dict) else predict(tree[next(iter(tree))].get(row[next(iter(tree))], "?"), row)
+data = [['Sunny','Hot','No'],['Sunny','Cool','No'],['Rainy','Cool','Yes'],
+        ['Rainy','Hot','Yes'],['Cloudy','Hot','Yes'],['Cloudy','Cool','Yes']]
+random.seed(42); random.shuffle(data)
+train, test = data[:4], data[4:]
+tree = id3(train, [0, 1])
+print("Tree:", tree)
+for row in test:
+    p = predict(tree, row)
+    print(f"  {'✓' if p==row[-1] else '✗'} {row[0]},{row[1]} → {p} (actual: {row[-1]})")
+
+
+----------------------------------------------------------------------------------------------------
+
+
+#EXPT-7
+X = [[1],[2],[3],[8],[9],[10]]; y = [0,0,0,1,1,1]
+predict = lambda v: 0 if v < 5 else 1
+
+print("SUPERVISED")
+print("2 ->", predict(2)); print("9 ->", predict(9))
+
+print("\nUNSUPERVISED")
+for v in X: print(v[0], "-> Cluster", "A" if v[0]<5 else "B")
+
+print("\nSEMI-SUPERVISED")
+for v in [2,3,8,10]: print(v, "->", predict(v))
+
+print("\nREINFORCEMENT")
+score = sum(10 if a=="Correct" else -5 for a in ["Correct","Wrong","Correct"])
+print("Score =", score)
+
+----------------------------------------------------------------------------------------------------
+
+
+#EXPT-8
+S = ["0", "0"]
+data = [
+    ["High", "Yes"],
+    ["High", "Yes"],
+    ["Low", "No"]
+]
+for x, y in data:
+    if y == "Yes":
+        for i in range(len(S)):
+            if S[i] == "0":
+                S[i] = x
+            elif S[i] != x:
+                S[i] = "?"
+print("FIND-S ALGORITHM")
+print("Final Hypothesis :", S)
+# CANDIDATE ELIMINATION
+print("\nCANDIDATE ELIMINATION")
+print("Specific Boundary S :", S)
+print("General Boundary G : ['?', '?']")
+# INDUCTIVE BIAS
+print("\nINDUCTIVE BIAS")
+print("Find-S learns the most specific concept")
+print("Candidate Elimination keeps both")
+print("Specific and General boundaries")
+
+
+----------------------------------------------------------------------------------------------------
+
+
+#EXPT-9
+import numpy as np
+
+X = np.array([[8.3,41,6.9],[8.3,21,6.2],[7.2,52,8.2],[5.6,52,5.8],
+              [3.8,52,6.2],[4.0,52,4.7],[3.6,52,4.9],[3.1,52,4.7],
+              [2.0,42,4.2],[3.6,52,4.9]])
+y = np.array([4.5,3.5,3.5,3.4,3.4,2.6,2.9,2.4,2.2,2.6])
+
+tx, vx, ty, vy = X[:8], X[8:], y[:8], y[8:]
+
+m, s = tx.mean(0), tx.std(0)
+tx = (tx-m)/s; vx = (vx-m)/s
+
+tx = np.c_[np.ones(len(tx)), tx]
+vx = np.c_[np.ones(len(vx)), vx]
+
+theta = np.linalg.inv(tx.T @ tx) @ tx.T @ ty
+pred  = vx @ theta
+mse   = np.mean((vy - pred)**2)
+
+print("Predictions\n")
+for i in range(len(pred)):
+    print("Actual   :", vy[i])
+    print("Predicted:", round(pred[i], 2))
+    print()
+
+print("MSE  =", round(mse, 2))
+print("RMSE =", round(np.sqrt(mse), 2))
+
+----------------------------------------------------------------------------------------------------
+
+
+#EXPT-10
+import numpy as np
+# Simple 4x4 Digit Dataset
+X = np.array([
+    [1,1,1,1,1,0,0,1,1,0,0,1,1,1,1,1],  # 0
+    [0,1,0,0,1,1,0,0,0,1,0,0,1,1,1,0],  # 1
+    [1,1,1,0,0,0,1,0,1,1,1,0,1,0,0,0],  # 2
+    [1,1,1,0,0,0,1,0,1,1,1,0,0,0,1,0],  # 3
+    [1,0,1,0,1,0,1,0,1,1,1,0,0,0,1,0]   # 4
+])
+# Labels
+y = np.array([0, 1, 2, 3, 4])
+print("SIMPLE MNIST DATASET\n")
+# Display Images
+for i in range(len(X)):
+    print("Digit :", y[i])
+    print(X[i].reshape(4, 4))
+    print()
+# Dataset Info
+print("Dataset Shape :", X.shape)
+print("Total Labels :", len(y))
+
+----------------------------------------------------------------------------------------------------
